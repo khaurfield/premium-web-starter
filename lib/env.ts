@@ -60,6 +60,10 @@ export const serverEnvSchema = z.object({
     blankToUndefined,
     z.string().trim().min(1).default("openai-compatible"),
   ),
+  /** Optional comma-separated allow-list of model ids, e.g. `id|Label,id2`. */
+  AI_MODELS: optionalText,
+  /** Optional comma-separated model ids that accept image parts. */
+  AI_VISION_MODELS: optionalText,
   AI_MAX_OUTPUT_TOKENS: boundedInt(1024, 1, 32_000),
   AI_REQUEST_TIMEOUT_MS: boundedInt(30_000, 1_000, 120_000),
 

@@ -14,9 +14,8 @@ export default function NotFound() {
         Page not found
       </h1>
       <p className="max-w-xl text-base leading-relaxed text-muted">
-        The route you requested does not exist yet. The foundation currently
-        ships the home page and two API routes: <code>/api/health</code> and{" "}
-        <code>/api/chat</code>.
+        The route you requested does not exist. Available pages are the home
+        page and <code>/chat</code>; the API lives under <code>/api</code>.
       </p>
       <Link href="/" className={cn(buttonVariants())}>
         Back to home

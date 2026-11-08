@@ -38,9 +38,10 @@ npm run check       # all of the above except e2e
 4. **Validate at the boundary.** All request bodies are parsed with Zod in
    `lib/api/contracts.ts`; all errors go through `lib/errors.ts` and
    `lib/api/response.ts`; all significant events go through `lib/logging`.
-5. **Do not start the next stage** without approval: chat UI, Supabase Auth,
-   RAG/pgvector queries, Capacitor/Android builds, on-device models, and
-   model training are intentionally out of scope for this foundation.
+5. **Do not start the next stage** without approval: server-side auth,
+   conversation persistence, RAG/pgvector queries, Capacitor/Android builds,
+   on-device models, and model training are intentionally out of scope for
+   the current stage. The responsive chat UI at `/chat` IS implemented.
 6. Preserve `LICENSE`, `.gitignore` and the intent of `README.md`. Do not delete
    useful existing files.
 
@@ -49,9 +50,15 @@ npm run check       # all of the above except e2e
 ```
 app/                     routes, layouts, global CSS, error boundaries
 app/api/health/          real readiness/configuration probe
+app/api/models/          browser-safe, server-configured model catalog
 app/api/chat/            real, config-gated streaming chat endpoint
-components/ui/           reusable presentational primitives
-components/              composed site sections
+app/chat/                responsive assistant workspace
+components/ui/           reusable, accessible primitives (Radix wrappers)
+components/chat/         conversation sidebar, messages, composer
+components/settings/     theme, preferences, profile dialogs
+components/providers/    theme + local state provider
+hooks/                   streaming chat, browser speech recognition
+lib/client/              browser-safe storage, preferences, attachments
 lib/env.ts               server-only Zod-validated environment
 lib/public-env.ts        browser-safe configuration
 lib/errors.ts            typed error hierarchy

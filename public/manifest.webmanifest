@@ -1,11 +1,11 @@
 {
   "name": "Personal AI Assistant",
   "short_name": "Assistant",
-  "description": "Personal AI assistant foundation (web + future Android app).",
-  "start_url": "/",
+  "description": "Personal AI assistant workspace (web + future Android app).",
+  "start_url": "/chat",
   "display": "standalone",
-  "background_color": "#f6f8fb",
-  "theme_color": "#1d4ed8",
+  "background_color": "#f7f8fc",
+  "theme_color": "#4f46e5",
   "icons": [
     {
       "src": "/icon.svg",

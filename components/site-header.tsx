@@ -1,62 +1,60 @@
-import { ExternalLink } from "lucide-react";
+import { ArrowUpRight, ExternalLink } from "lucide-react";
 import Link from "next/link";
 
-import { Badge } from "@/components/ui/badge";
+import { Brand } from "@/components/brand";
+import { ThemeToggle } from "@/components/settings/theme-toggle";
+import { buttonVariants } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
-import { publicEnv } from "@/lib/public-env";
+import { cn } from "@/lib/utils";
 
 const REPOSITORY_URL = "https://github.com/khaurfield/premium-web-starter";
 
+const NAV_LINKS = [
+  { label: "Features", href: "/#features" },
+  { label: "How it works", href: "/#how-it-works" },
+  { label: "Setup", href: "/#setup" },
+];
+
 export function SiteHeader() {
   return (
-    <header className="border-b border-border bg-surface/80 backdrop-blur">
-      <Container className="flex flex-wrap items-center justify-between gap-3 py-4">
-        <Link href="/" className="flex items-center gap-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 24 24"
-              width={20}
-              height={20}
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M4 14v-2a8 8 0 0 1 16 0v2" />
-              <rect x="2" y="13" width="4" height="6" rx="1" />
-              <rect x="18" y="13" width="4" height="6" rx="1" />
-            </svg>
-          </span>
-          <span className="text-sm font-semibold tracking-tight sm:text-base">
-            {publicEnv.appName}
-          </span>
-        </Link>
+    <header className="sticky top-0 z-40 border-b border-border bg-surface/80 backdrop-blur-xl">
+      <Container className="flex h-16 items-center gap-3">
+        <Brand />
 
-        <nav aria-label="Main navigation" className="flex items-center gap-3">
-          <Badge variant="info">Foundation stage</Badge>
+        <nav
+          aria-label="Main navigation"
+          className="ml-4 hidden items-center gap-1 lg:flex"
+        >
+          {NAV_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="rounded-lg px-3 py-2 text-sm font-medium text-muted transition-colors hover:bg-surface-2 hover:text-foreground"
+            >
+              {link.label}
+            </Link>
+          ))}
           <a
-            className="hidden text-sm text-muted transition-colors hover:text-foreground sm:inline"
-            href="#architecture"
-          >
-            Architecture
-          </a>
-          <a
-            className="hidden text-sm text-muted transition-colors hover:text-foreground sm:inline"
-            href="#setup"
-          >
-            Setup
-          </a>
-          <a
-            className="inline-flex items-center gap-1 text-sm text-muted transition-colors hover:text-foreground"
             href={REPOSITORY_URL}
             target="_blank"
             rel="noreferrer noopener"
+            className="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-muted transition-colors hover:bg-surface-2 hover:text-foreground"
           >
-            GitHub <ExternalLink aria-hidden="true" size={14} />
+            GitHub <ExternalLink aria-hidden="true" size={13} />
           </a>
         </nav>
+
+        <div className="ml-auto flex items-center gap-1.5">
+          <ThemeToggle />
+          <Link
+            href="/chat"
+            className={cn(buttonVariants({ size: "sm" }), "h-10 px-3 sm:px-4")}
+          >
+            <span className="hidden sm:inline">Open assistant</span>
+            <span className="sm:hidden">Open app</span>
+            <ArrowUpRight aria-hidden="true" size={15} />
+          </Link>
+        </div>
       </Container>
     </header>
   );

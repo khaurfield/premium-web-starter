@@ -21,6 +21,10 @@ const SYSTEM_PROMPT =
 export interface ChatCallOptions {
   signal?: AbortSignal;
   maxOutputTokens?: number;
+  /** Verified against the server allow-list before reaching this module. */
+  model?: string;
+  /** Optional user instructions appended to the base system prompt. */
+  systemPrompt?: string;
   logger?: Logger;
 }
 
@@ -31,13 +35,21 @@ export interface GeneratedChat {
 }
 
 /** One place that knows how to talk to the configured OpenAI-compatible API. */
-function createModel(config: AIConfig): LanguageModel {
+function createModel(config: AIConfig, modelId: string): LanguageModel {
   const provider = createOpenAICompatible({
     name: config.providerName,
     baseURL: config.baseURL,
     apiKey: config.apiKey,
   });
-  return provider.chatModel(config.model);
+  return provider.chatModel(modelId);
+}
+
+/** Base instructions plus any real, user-supplied preferences. */
+function buildSystemPrompt(extra: string | undefined): string {
+  const trimmed = extra?.trim();
+  return trimmed
+    ? `${SYSTEM_PROMPT}\n\nAdditional user instructions:\n${trimmed}`
+    : SYSTEM_PROMPT;
 }
 
 /** Combine client cancellation with a hard server-side timeout. */
@@ -71,20 +83,21 @@ export async function generateChat(
   options: ChatCallOptions = {},
 ): Promise<GeneratedChat> {
   const config = requireAIConfig();
-  const model = createModel(config);
+  const selectedModel = options.model ?? config.model;
+  const model = createModel(config, selectedModel);
 
   try {
     const result = await generateText({
       model,
       messages,
-      system: SYSTEM_PROMPT,
+      system: buildSystemPrompt(options.systemPrompt),
       maxOutputTokens: options.maxOutputTokens ?? config.maxOutputTokens,
       maxRetries: 1,
       abortSignal: withTimeout(options.signal, config.timeoutMs),
     });
 
     options.logger?.info("ai.completed", {
-      model: config.model,
+      model: selectedModel,
       finishReason: result.finishReason,
       promptTokens: result.totalUsage?.inputTokens,
       completionTokens: result.totalUsage?.outputTokens,
@@ -92,12 +105,12 @@ export async function generateChat(
 
     return {
       text: result.text,
-      model: config.model,
+      model: selectedModel,
       finishReason: result.finishReason,
     };
   } catch (cause) {
     options.logger?.error("ai.upstream_error", {
-      model: config.model,
+      model: selectedModel,
       error: serializeError(cause),
     });
     throw new AppError({
@@ -118,18 +131,19 @@ export function streamChat(
   options: ChatCallOptions = {},
 ): Response {
   const config = requireAIConfig();
-  const model = createModel(config);
+  const selectedModel = options.model ?? config.model;
+  const model = createModel(config, selectedModel);
 
   const result = streamText({
     model,
     messages,
-    system: SYSTEM_PROMPT,
+    system: buildSystemPrompt(options.systemPrompt),
     maxOutputTokens: options.maxOutputTokens ?? config.maxOutputTokens,
     maxRetries: 1,
     abortSignal: withTimeout(options.signal, config.timeoutMs),
     onError: ({ error }) => {
       options.logger?.error("ai.stream_error", {
-        model: config.model,
+        model: selectedModel,
         error: serializeError(error),
       });
     },

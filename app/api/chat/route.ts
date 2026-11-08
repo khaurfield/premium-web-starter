@@ -1,6 +1,7 @@
 import { chatRequestSchema } from "@/lib/api/contracts";
 import { jsonOk, withApiRoute } from "@/lib/api/response";
 import { toModelMessages } from "@/lib/ai/messages";
+import { resolveModel } from "@/lib/ai/models";
 import { generateChat, streamChat } from "@/lib/ai/provider";
 import { AppError } from "@/lib/errors";
 
@@ -12,9 +13,12 @@ export const dynamic = "force-dynamic";
  * response comes from the configured OpenAI-compatible provider. Without them,
  * the route returns a typed 503 (`AI_NOT_CONFIGURED`) — never canned text.
  *
- * Body: { messages: [{ role, content }], stream?: boolean, maxOutputTokens?: number }
+ * Body: { messages: [{ role, content }], stream?, maxOutputTokens?, model?,
+ *         systemPrompt?, images? }
  * `stream: true` (default) → `text/plain; charset=utf-8` delta stream.
  * `stream: false` → JSON envelope containing the provider's completion.
+ * `model` is checked against the server allow-list from GET /api/models.
+ * `images` are real provider image parts, not client-side decoration.
  */
 export const POST = withApiRoute(
   async ({ request, requestId, logger }) => {
@@ -42,10 +46,25 @@ export const POST = withApiRoute(
       });
     }
 
-    const messages = toModelMessages(parsed.data.messages);
+    const images = parsed.data.images ?? [];
+    if (
+      images.length > 0 &&
+      !parsed.data.messages.some((message) => message.role === "user")
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Image attachments require a user message.",
+        expose: true,
+      });
+    }
+
+    const model = resolveModel(parsed.data.model);
+    const messages = toModelMessages(parsed.data.messages, images);
     const callOptions = {
       signal: request.signal,
       maxOutputTokens: parsed.data.maxOutputTokens,
+      model,
+      systemPrompt: parsed.data.systemPrompt,
       logger,
     };
 

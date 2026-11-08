@@ -5,14 +5,14 @@
 > support through Capacitor. — original project intent (preserved below in
 > expanded, accurate form).
 
-**Current status: foundation stage (v0.1.0).** This repository now contains a
-working, tested Next.js 16 foundation for a **personal AI assistant**: a typed
-frontend, a secure API layer, real (not simulated) AI provider wiring, a
+**Current status: frontend stage (v0.2.0).** This repository now contains a
+working, tested Next.js 16 **personal AI assistant** with a complete responsive
+chat workspace, a secure API layer, real (not simulated) AI provider wiring, a
 prepared database schema, tests, and cloud deployment configuration.
 
-Read this carefully: the assistant chat UI, authentication, RAG, the Android
-application and on-device models are **planned later stages** and are not
-implemented. Nothing in this repository pretends they are.
+Read this carefully: authentication, server-side conversation persistence, RAG,
+the Android application and on-device models are **planned later stages** and
+are not implemented. Nothing in this repository pretends they are.
 
 ---
 
@@ -27,7 +27,7 @@ implemented. Nothing in this repository pretends they are.
 | Backend structure | `lib/api/`, `lib/ai/`, `lib/db/`, `lib/logging/`, `lib/env.ts`, `lib/errors.ts`, `lib/public-env.ts` — layered, `server-only` guarded |
 | Database integration | `supabase/migrations/0001_init.sql` (5 tables, `pgvector`, indexes, triggers, RLS), typed schema in `lib/db/types.ts`, config + client factories |
 | Secure environment | Lazy Zod validation, `server-only` guard, `.env.example` template, `.gitignore` excludes all real `.env*` files, no key ever logged or returned |
-| API routes | `GET /api/health`, `POST /api/chat` (streaming or JSON, real provider only) |
+| API routes | `GET /api/health`, `GET /api/models`, `POST /api/chat` (streaming or JSON, real provider only) |
 | Error handling | One `AppError` hierarchy, `toAppError` normalisation, safe JSON envelopes, 3 React error boundaries |
 | Logging | Structured JSON lines, levels, request ids, secret redaction, path-only URL logging |
 | Testing | Vitest unit/integration tests, `happy-dom` component tests, Playwright E2E (desktop + mobile), coverage config |
@@ -251,11 +251,10 @@ training involved in this stage.
 
 ## 11. Roadmap — needs your approval before each stage
 
-1. **Chat UI** — streaming assistant interface with AI SDK React hooks.
-2. **Auth & persistence** — Supabase Auth, conversations, generated DB types.
-3. **RAG** — embeddings, `pgvector` RPC + ANN index over your own notes.
-4. **Android** — PWA polish, Capacitor 8 wrapper, debug APK in GitHub Actions.
-5. **On-device models** — optional LiteRT-LM (Gemma/Qwen) behind a feature flag.
+1. **Backend API** — auth, conversations, settings, memory, rate limiting.
+2. **RAG** — embeddings, `pgvector` RPC + ANN index over your own notes.
+3. **Android** — PWA polish, Capacitor 8 wrapper, debug APK in GitHub Actions.
+4. **On-device models** — optional LiteRT-LM (Gemma/Qwen) behind a feature flag.
 
 See `docs/architecture.md` and `docs/deployment.md` for the rationale and the
 phone-only workflow.
