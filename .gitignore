@@ -34,3 +34,22 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# environment (keep the tracked template)
+.env*
+!.env.example
+
+# test artifacts
+/playwright-report/
+/test-results/
+/blob-report/
+
+# android / capacitor (for the later mobile stage)
+/android/.gradle/
+/android/build/
+/android/app/build/
+/android/local.properties
+*.apk
+*.aab
+*.keystore
+!*.keystore.example
