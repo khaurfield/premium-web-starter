@@ -6,7 +6,7 @@ export default function Loading() {
       <div className="h-3 w-28 animate-pulse rounded-full bg-border" />
       <div className="h-10 w-full max-w-xl animate-pulse rounded-xl bg-border" />
       <div className="h-10 w-3/4 max-w-lg animate-pulse rounded-xl bg-border" />
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {[0, 1, 2].map((item) => (
           <div
             key={item}

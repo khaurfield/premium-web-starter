@@ -1,14 +1,15 @@
 import { expect, test } from "@playwright/test";
 
-test("home page renders the hero and the live status card", async ({ page }) => {
+test("home page renders the premium hero and the live status card", async ({ page }) => {
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { level: 1, name: /serious base/i }),
+    page.getByRole("heading", { level: 1, name: /personal AI assistant/i }),
   ).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "Live system status" }),
+    page.getByRole("heading", { level: 2, name: "Live system status" }),
   ).toBeVisible();
-  await expect(page.getByText("Real AI provider boundary")).toBeVisible();
+  await expect(page.getByText("Designed to feel finished")).toBeVisible();
+  await expect(page.getByText("Three honest boundaries")).toBeVisible();
 });
 
 test("health endpoint returns a validated envelope without secrets", async ({

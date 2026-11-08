@@ -96,7 +96,7 @@ export function SystemStatus() {
 
         {state.kind === "ready" ? (
           <>
-            <dl className="grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2">
+            <dl className="grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2">
               <IntegrationRow
                 label="AI provider"
                 configured={state.data.integrations.ai.configured}

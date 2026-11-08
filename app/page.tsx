@@ -145,7 +145,7 @@ export default function HomePage() {
         <section className="relative overflow-hidden border-b border-border bg-surface">
           <div aria-hidden="true" className="hero-aurora absolute inset-0" />
           <div aria-hidden="true" className="grid-fade absolute inset-0 opacity-60" />
-          <Container className="relative grid gap-12 py-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-16 lg:py-24">
+          <Container className="relative grid grid-cols-1 gap-12 py-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-16 lg:py-24">
             <div className="animate-fade-up space-y-7">
               <Badge variant="info" className="border-primary/25 bg-primary/10 text-primary">
                 <Sparkles aria-hidden="true" size={13} />
@@ -254,7 +254,7 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {features.map((feature) => {
                 const Icon = feature.icon;
                 return (
@@ -291,7 +291,7 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="grid gap-4 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
               {flowSteps.map((step) => {
                 const Icon = step.icon;
                 return (
@@ -342,7 +342,7 @@ export default function HomePage() {
 
         {/* ---------- Setup ---------- */}
         <section id="setup" className="scroll-mt-20 border-t border-border bg-surface py-16 sm:py-20">
-          <Container className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
+          <Container className="grid grid-cols-1 gap-10 lg:grid-cols-[0.9fr_1.1fr]">
             <div className="space-y-5">
               <Badge variant="neutral">Setup</Badge>
               <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -402,7 +402,7 @@ export default function HomePage() {
                   <CardDescription>Names only — no values are shown or logged.</CardDescription>
                 </CardHeader>
                 <CardContent className="px-0 pb-0">
-                  <div className="scrollbar-thin overflow-x-auto">
+                  <div className="scrollbar-thin w-full max-w-full overflow-x-auto">
                     <table className="w-full min-w-[30rem] text-left text-xs">
                       <thead className="border-y border-border bg-background text-muted">
                         <tr>
@@ -445,7 +445,7 @@ export default function HomePage() {
                 approval before work begins.
               </p>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {deferred.map((item) => {
                 const Icon = item.icon;
                 return (

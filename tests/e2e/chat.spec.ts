@@ -1,10 +1,25 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 /** 1x1 transparent PNG used to exercise the real image-attachment path. */
 const TINY_PNG = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFAAH/q842iQAAAABJRU5ErkJggg==",
   "base64",
 );
+
+/**
+ * On narrow screens the rail becomes a drawer. Tests that need the sidebar
+ * work in both projects by scoping their queries to whichever is present.
+ */
+async function openHistory(page: Page) {
+  const menu = page.getByRole("button", { name: "Open conversation history" });
+  if (await menu.isVisible()) {
+    await menu.click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    return dialog;
+  }
+  return page.locator("body");
+}
 
 test.describe("landing page", () => {
   test("renders the premium hero and a working assistant link", async ({ page }) => {
@@ -13,11 +28,13 @@ test.describe("landing page", () => {
       page.getByRole("heading", { level: 1, name: /personal AI assistant/i }),
     ).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: "Live system status" }),
+      page.getByRole("heading", { level: 2, name: "Live system status" }),
     ).toBeVisible();
     await expect(page.getByText("Designed to feel finished")).toBeVisible();
 
-    const openLink = page.getByRole("link", { name: /open (the assistant|app)/i }).first();
+    const openLink = page
+      .getByRole("link", { name: /open (the assistant|app)/i })
+      .first();
     await expect(openLink).toHaveAttribute("href", "/chat");
   });
 
@@ -49,21 +66,32 @@ test.describe("landing page", () => {
 });
 
 test.describe("assistant workspace", () => {
-  test("desktop shell shows the sidebar and all composer controls", async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 900 });
+  test("shell exposes the sidebar and all composer controls", async ({ page }) => {
     await page.goto("/chat");
 
-    await expect(page.getByRole("heading", { name: /what would you like/i })).toBeVisible();
     await expect(
-      page.getByRole("button", { name: "New conversation" }),
+      page.getByRole("heading", { name: /what would you like/i }),
     ).toBeVisible();
-    await expect(page.getByRole("textbox", { name: "Message the assistant" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Attach text files" })).toBeVisible();
+    await expect(
+      page.getByRole("textbox", { name: "Message the assistant" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Attach text files" }),
+    ).toBeVisible();
     await expect(page.getByRole("button", { name: "Attach images" })).toBeVisible();
-    await expect(page.getByRole("button", { name: /voice dictation|stop dictation/i })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /voice dictation|stop dictation/i }),
+    ).toBeVisible();
     await expect(page.getByRole("button", { name: "Send message" })).toBeDisabled();
-    await expect(page.getByText("No models configured").first()).toBeVisible();
+    await expect(
+      page.locator("span:visible").filter({ hasText: "No models configured" }).first(),
+    ).toBeVisible();
     await expect(page.getByText(/Connect an AI provider/i)).toBeVisible();
+
+    const scope = await openHistory(page);
+    await expect(
+      scope.getByRole("button", { name: "New conversation", exact: true }),
+    ).toBeVisible();
 
     const overflow = await page.evaluate(
       () =>
@@ -77,11 +105,19 @@ test.describe("assistant workspace", () => {
     await page.setViewportSize({ width: 360, height: 740 });
     await page.goto("/chat");
 
-    await expect(page.getByRole("heading", { name: /what would you like/i })).toBeVisible();
-    await expect(page.getByRole("button", { name: "New conversation" })).toHaveCount(0);
+    await expect(
+      page.getByRole("heading", { name: /what would you like/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "New conversation", exact: true }).first(),
+    ).toBeHidden();
+
     await page.getByRole("button", { name: "Open conversation history" }).click();
-    await expect(page.getByRole("dialog")).toBeVisible();
-    await expect(page.getByRole("button", { name: "New conversation" })).toBeVisible();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await expect(
+      dialog.getByRole("button", { name: "New conversation", exact: true }),
+    ).toBeVisible();
     await page.getByRole("button", { name: "Close conversation history" }).click();
     await expect(page.getByRole("dialog")).toHaveCount(0);
 
@@ -94,39 +130,52 @@ test.describe("assistant workspace", () => {
   });
 
   test("new conversation and search operate on real local history", async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/chat");
-    await expect(page.getByRole("button", { name: "New conversation" })).toBeVisible();
+    const scope = await openHistory(page);
+    const createButton = scope.getByRole("button", {
+      name: "New conversation",
+      exact: true,
+    });
+    await expect(createButton).toBeVisible();
 
-    await page.getByRole("button", { name: "New conversation" }).click();
+    await createButton.click();
+    // On phones the drawer closes after navigating; reopen it for the check.
+    const history = await openHistory(page);
     await expect(
-      page
+      history
         .getByRole("list", { name: "Conversation history" })
         .getByRole("listitem"),
     ).toHaveCount(2);
 
-    await page.getByRole("textbox", { name: "Search conversations" }).fill("no-match-value");
+    await history
+      .getByRole("textbox", { name: "Search conversations" })
+      .fill("no-match-value");
     await expect(page.getByText("No conversations match your search.")).toBeVisible();
   });
 
   test("sending without credentials reports the real 503 and creates no answer", async ({
     page,
   }) => {
-    await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/chat");
     const composer = page.getByRole("textbox", { name: "Message the assistant" });
     await composer.fill("Hello from the browser test");
     await page.getByRole("button", { name: "Send message" }).click();
 
-    await expect(page.getByRole("alert")).toContainText("AI_NOT_CONFIGURED");
-    await expect(page.getByText("Hello from the browser test")).toBeVisible();
+    const errorBanner = page
+      .getByRole("alert")
+      .filter({ hasText: "Request failed" });
+    await expect(errorBanner).toContainText("AI_NOT_CONFIGURED");
+    await expect(
+      page
+        .getByRole("article", { name: "Your message" })
+        .getByText("Hello from the browser test"),
+    ).toBeVisible();
     // No fabricated assistant bubble is ever rendered on a configuration error.
     await expect(page.getByLabel("Assistant message")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Retry" })).toBeVisible();
   });
 
   test("text and image attachments are added and removed for real", async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/chat");
 
     await page.getByRole("button", { name: "Attach text files" }).click();
@@ -151,9 +200,11 @@ test.describe("assistant workspace", () => {
   });
 
   test("settings dialog exposes real, persisted preferences", async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/chat");
-    await page.getByRole("button", { name: "Open settings" }).click();
+    await page
+      .getByRole("button", { name: "Open profile and settings menu" })
+      .click();
+    await page.getByRole("menuitem", { name: "Settings" }).click();
     await expect(page.getByRole("dialog")).toBeVisible();
     await expect(page.getByText("Chat behaviour")).toBeVisible();
 
