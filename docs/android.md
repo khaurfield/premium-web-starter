@@ -19,7 +19,7 @@ The application ID is `com.khaurfield.personalassistant` (change it before publi
 
 ## Debug build and artifact
 
-The **Android debug APK** GitHub Actions workflow runs `testDebugUnitTest` and `assembleDebug`, checks the package ID, verifies the debug signature with `apksigner`, checks alignment, and uploads `personal-ai-android-debug` containing `app-debug.apk` and `SHA256SUMS.txt`. Workflow artifacts are available from the successful run's **Artifacts** section and expire after 30 days. A debug APK is signed with the runner's debug key, so a later debug build might not install as an update over it without uninstalling the old one. Uninstalling clears local history and app data.
+The **Android debug APK** GitHub Actions workflow runs `testDebugUnitTest` and `assembleDebug`, checks the package ID, verifies the debug signature with `apksigner`, checks alignment, and uploads `personal-ai-android-debug` containing `app-debug.apk` and `SHA256SUMS.txt`. The [verified build run 42627197511](https://github.com/khaurfield/premium-web-starter/actions/runs/42627197511) succeeded for commit `565b198`; [artifact 13678399408](https://github.com/khaurfield/premium-web-starter/actions/runs/42627197511/artifacts/13678399408) expires on 2026-12-09 at 13:38:58 UTC. GitHub authentication may be required to download it. A debug APK is signed with the runner's debug key, so a later debug build might not install as an update over it without uninstalling the old one. Uninstalling clears local history and app data.
 
 For a local build (Android Studio or command line), install JDK 17, Android SDK platform 35 and build-tools 35.0.0, then:
 
