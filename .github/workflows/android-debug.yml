@@ -25,15 +25,31 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - uses: android-actions/setup-android@v3
-      - name: Install Android SDK 35
-        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
-      - uses: gradle/actions/setup-gradle@v4
+      - name: Ensure Android SDK 35 is available
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${ANDROID_HOME:?Android SDK missing from runner}"
+          if [[ ! -d "$ANDROID_HOME/platforms/android-35" || ! -d "$ANDROID_HOME/build-tools/35.0.0" ]]; then
+            "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0"
+          fi
       - name: Verify wrapper checksum
         run: echo '2db75c40782f5e8ba1fc278a5574bab070adccb2d21ca5a6e5ed840888448046  android/gradle/wrapper/gradle-wrapper.jar' | sha256sum --check
       - name: Run Android unit tests and build debug APK
         working-directory: android
-        run: ./gradlew --no-daemon testDebugUnitTest assembleDebug
+        shell: bash
+        run: |
+          set +e
+          ./gradlew --no-daemon testDebugUnitTest assembleDebug > "$RUNNER_TEMP/android-build.log" 2>&1
+          status=$?
+          cat "$RUNNER_TEMP/android-build.log"
+          if (( status != 0 )); then
+            while IFS= read -r line; do
+              line=${line//'%'/'%25'}
+              echo "::error::$line"
+            done < <(tail -40 "$RUNNER_TEMP/android-build.log")
+          fi
+          exit "$status"
       - name: Verify package, signature, and checksum
         shell: bash
         run: |
